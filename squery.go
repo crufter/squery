@@ -16,7 +16,16 @@ func (s Set) Ids() []string {
 	return []string{}
 }
 
-func NewApi() Api {
+// "Type alias" (not really...)
+type M map[string]interface{}
+
+type ApiAccessor interface {
+	GetSchema(entity string) Schema
+	Call(endpoint, args ...interface{}) Set
+	// CallWith(endpoint string, doc interface{}) Set
+}
+
+func NewApi(ai ApiAccessor) Api {
 	return Api{}
 }
 
@@ -29,14 +38,13 @@ type Schema struct {
 }
 
 type Api struct {
-	sl schemaLoader
+	aa ApiAccessor
 }
 
-type SchemaLoader interface {
-	Load(entity string) Schema
-}
-
-// Call any endpoint
+// Call any endpoint. Use sparingly, should be used for actions which are
+// modifying data, not reads. For reads see the Query Api.
+//
+// Returns Set nevertheless, you know... just in case you are such a rebel.
 func (a Api) Call(endpoint string, args ...interface{}) Set {
 	q.fcs = append(filterFunc{
 		endpoint: endpoint,
@@ -45,28 +53,46 @@ func (a Api) Call(endpoint string, args ...interface{}) Set {
 	return q
 }
 
+// Resolves foreign keys
+func (a Api) Resolve(entity, fields string, set Set) Set {
+
+}
+
 type Entity struct {
 	api        Api
 	entityName entityName
 }
 
-// Read by Id
-func (a Api) Entity(entityName string) Entity {
+// Returns a Query. An empty Query represents the whole set.
+func (a Api) Query(entityName string) Query {
 	return Entity{
 		api:        a,
 		entityName: entityName,
 	}
 }
 
-func (e Entity) Read(ids ...string) Set {
+// Id in
+func (q Query) Id(ids ...string) Query {
 
 }
 
-func (e Entity) ListAll() Set {
+// Field between
+func (q Query) Between(fieldName string, from, to interface{}) Query {
 
 }
 
-// Resolves foreign keys
-func (e Entity) Resolve(fields string, set Set) Set {
+// Field equals
+func (q Query) Equals(fieldName string, value ...interface{}) Query {
+
+}
+
+// Looks like Equals but in fact this can used relations stored
+// separately of any of the two involved entities.
+func (e Query) Fk(entity string, entityIds ...string) Query {
+
+}
+
+// Produces a result set
+func (q Query) All() Set {
 
 }
