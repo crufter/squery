@@ -6,7 +6,7 @@ type Document struct {
 }
 
 func (d Document) ToSet() Set {
-	return Set([]Document{v})
+	return Set([]Document{d})
 }
 
 type Set []Document
@@ -21,7 +21,7 @@ type M map[string]interface{}
 
 type ApiAccessor interface {
 	GetSchema(entity string) Schema
-	Call(endpoint, args ...interface{}) Set
+	Call(endpoint string, args ...interface{}) Set
 	// CallWith(endpoint string, doc interface{}) Set
 }
 
@@ -30,7 +30,7 @@ func NewApi(ai ApiAccessor) Api {
 }
 
 type filterFunc struct {
-	endpoint String
+	endpoint string
 	args     []string
 }
 
@@ -46,26 +46,22 @@ type Api struct {
 //
 // Returns Set nevertheless, you know... just in case you are such a rebel.
 func (a Api) Call(endpoint string, args ...interface{}) Set {
-	q.fcs = append(filterFunc{
-		endpoint: endpoint,
-		args:     args,
-	})
-	return q
+	return Set{}
 }
 
 // Resolves foreign keys
 func (a Api) Resolve(entity, fields string, set Set) Set {
-
+	return Set{}
 }
 
-type Entity struct {
+type Query struct {
 	api        Api
-	entityName entityName
+	entityName string
 }
 
 // Returns a Query. An empty Query represents the whole set.
 func (a Api) Query(entityName string) Query {
-	return Entity{
+	return Query{
 		api:        a,
 		entityName: entityName,
 	}
@@ -73,26 +69,26 @@ func (a Api) Query(entityName string) Query {
 
 // Id in
 func (q Query) Id(ids ...string) Query {
-
+	return Query{}
 }
 
 // Field between
 func (q Query) Between(fieldName string, from, to interface{}) Query {
-
+	return Query{}
 }
 
 // Field equals
 func (q Query) Equals(fieldName string, value ...interface{}) Query {
-
+	return Query{}
 }
 
 // Looks like Equals but in fact this can used relations stored
 // separately of any of the two involved entities.
 func (e Query) Fk(entity string, entityIds ...string) Query {
-
+	return Query{}
 }
 
 // Produces a result set
 func (q Query) All() Set {
-
+	return Set{}
 }
