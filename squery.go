@@ -54,9 +54,18 @@ func (a Api) Resolve(entity, fields string, set Set) Set {
 	return Set{}
 }
 
+type between struct {
+	from interface{}
+	to   interface{}
+}
+
 type Query struct {
 	api        Api
 	entityName string
+	ids        []string
+	between    map[string]between     // fieldnames to betweens
+	equals     map[string]interface{} // fieldnames to values
+	refersTo   map[string]Query       // entitynames to queries
 }
 
 // Returns a Query. An empty Query represents the whole set.
@@ -64,28 +73,37 @@ func (a Api) Query(entityName string) Query {
 	return Query{
 		api:        a,
 		entityName: entityName,
+		ids:        []string{},
+		between:    map[string]between{},
+		equals:     map[string][]interface{}{},
+		refersTo:   map[string]Query{},
 	}
 }
 
-// Id in
+// Special case of Equals
 func (q Query) Id(ids ...string) Query {
-	return Query{}
+	q.ids = ids
+	return q
 }
 
 // Field between
 func (q Query) Between(fieldName string, from, to interface{}) Query {
-	return Query{}
+	q.between[fieldName] = between{
+		from: from,
+		to:   to,
+	}
+	return q
 }
 
-// Field equals
 func (q Query) Equals(fieldName string, value ...interface{}) Query {
-	return Query{}
+	q.equals[fieldName] = value
+	return q
 }
 
-// Looks like Equals but in fact this can used relations stored
-// separately of any of the two involved entities.
-func (e Query) Fk(entity string, entityIds ...string) Query {
-	return Query{}
+// A "foreign key" in the entity
+func (e Query) RefersTo(query Query) Query {
+	q.refersTo = query
+	return q
 }
 
 // Produces a result set
