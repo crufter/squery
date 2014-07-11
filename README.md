@@ -17,6 +17,12 @@ The solution
 ---
 Crawl the data, copy it and precompute your views! This way you can ask your system high level questions without sacrificing performance, violating service boundaries! 
 
+***Steps involved***:
+	- each entity in your services must provide a way to be crawled (to be specified)
+	- for each entity you must define a schema, most importantly the foreign keys referring to an entity in an other service
+	- the hard part: build a service which can based on a query can precompute a view. An example implementation + tooling to help implementation will be done by the author of this project
+	- when the service is ready use this library as a driver to query your data
+
 In action
 ---
 
@@ -33,3 +39,4 @@ api.Query("finance.entry").RefersTo(api.Query("customer").Id(97)).Between("timeS
 ```
 
 These queries can be analyzed, and a view can be precomputed to return the data efficiently exactly the way you want. This lets you express your requirement in a high level fashion.
+
