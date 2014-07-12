@@ -1,5 +1,9 @@
 package squery
 
+import (
+	"encoding/json"
+)
+
 type Document struct {
 	Name   string                 // name of the entity
 	Fields map[string]interface{} // json document itself
@@ -20,9 +24,7 @@ func (s Set) Ids() []string {
 type M map[string]interface{}
 
 type ApiAccessor interface {
-	GetSchema(entity string) Schema
-	Call(endpoint string, args ...interface{}) Set
-	// CallWith(endpoint string, doc interface{}) Set
+	GetSchemas(entity string) map[string]Schema
 }
 
 func NewApi(ai ApiAccessor) Api {
@@ -63,9 +65,9 @@ type Query struct {
 	api        Api
 	entityName string
 	ids        []string
-	between    map[string]between     // fieldnames to betweens
-	equals     map[string]interface{} // fieldnames to values
-	refersTo   map[string]Query       // entitynames to queries
+	between    map[string]between       // fieldnames to betweens
+	equals     map[string][]interface{} // fieldnames to values
+	refersTo   []Query                  // entitynames to queries
 }
 
 // Returns a Query. An empty Query represents the whole set.
@@ -76,7 +78,7 @@ func (a Api) Query(entityName string) Query {
 		ids:        []string{},
 		between:    map[string]between{},
 		equals:     map[string][]interface{}{},
-		refersTo:   map[string]Query{},
+		refersTo:   []Query{},
 	}
 }
 
@@ -86,7 +88,25 @@ func (q Query) Id(ids ...string) Query {
 	return q
 }
 
-// Field between
+func (q Query) MarshalJSON() ([]byte, error) {
+	v := M{
+		"entityName": q.entityName,
+	}
+	if len(q.ids) > 0 {
+		v["ids"] = q.ids
+	}
+	if len(q.between) > 0 {
+		v["between"] = q.between
+	}
+	if len(q.equals) > 0 {
+		v["equals"] = q.equals
+	}
+	if len(q.refersTo) > 0 {
+		v["refersTo"] = q.refersTo
+	}
+	return json.Marshal(v)
+}
+
 func (q Query) Between(fieldName string, from, to interface{}) Query {
 	q.between[fieldName] = between{
 		from: from,
@@ -101,12 +121,22 @@ func (q Query) Equals(fieldName string, value ...interface{}) Query {
 }
 
 // A "foreign key" in the entity
-func (e Query) RefersTo(query Query) Query {
-	q.refersTo = query
+func (q Query) RefersTo(query Query) Query {
+	q.refersTo = append(q.refersTo, query)
 	return q
 }
 
-// Produces a result set
-func (q Query) All() Set {
-	return Set{}
+// Return all hits
+func (q Query) All() (Set, error) {
+	return Set{}, nil
+}
+
+// Classic paging
+func (q Query) Page(skip, limit int) (Set, error) {
+	return Set{}, nil
+}
+
+// Cassandra-like paging
+func (q Query) Stream(start, end string, limit int) (Set, error) {
+	return Set{}, nil
 }
